@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Elasticsearch\ClientBuilder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use stdClass;
@@ -39,7 +40,7 @@ class UserController extends Controller
         $token =  $user->createToken('MyApp')-> accessToken;
         return redirect()->to(env('APP_URL').'/login?code='.$user->google_id.'&token='.$token);
     }
-    public function get_posts() {
+    public function get_posts(Request $request) {
         $hosts = [
             env('ELASTIC_HOST'),         // IP + Port
         ];
@@ -53,20 +54,76 @@ class UserController extends Controller
                     'bool' => [
                         'must' => ['match_all' => new stdClass],
                         'filter' => [
-                            'geo_distance' => ["distance" => "200km", "pin.location" => [
-                                "lat" => 40,
-                                "lon" => -70
+                            'geo_distance' => ["distance" => $request->distance."km", "pin.location" => [
+                                "lat" => floatval($request->lat),
+                                "lon" => floatval($request->lng)
                             ]]
                         ]
                     ],
 
+                ],
+                'sort' => [
+                    [
+                        '_geo_distance' => [
+                            'pin.location' => [floatval($request->lat), floatval($request->lng)],
+                            "order" => "asc",
+                              "unit" => "km",
+                              "mode" => "min",
+                              "distance_type" => "arc",
+                              "ignore_unmapped" => true
+                        ]
+                    ]
                 ]
             ]
         ];
 
         $results = $client->search($params);
 
-        return $results['hits']['hits'];
+        $ans = array_map(function ($pst){
+            $post = ['name'=>$pst['_source']['name'],'content'=>$pst['_source']['content']];
+            if(isset($pst['_source']['formatted_address']))
+                $post['formatted_address'] = $pst['_source']['formatted_address'];
+            else
+            $post['formatted_address'] = 'No Adress';
+            if(isset($pst['_source']['avatar']))
+                $post['avatar'] = $pst['_source']['avatar'];
+            else
+                $post['avatar'] = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVIr6pSB3YonR9a0c7WU0iMWEX8ggImki9OLNnLPHYn590JxYkWNaNWB1h4vch9AJcBec&usqp=CAU';
+            return $post;
+        },$results['hits']['hits']);
+
+        return $ans;
+
+    }
+    public function create_post(Request $request) {
+        $user = Auth::user();
+        $hosts = [
+            env('ELASTIC_HOST'),         // IP + Port
+        ];
+        $client = ClientBuilder::create()           // Instantiate a new ClientBuilder
+        ->setHosts($hosts)      // Set the hosts
+        ->build();
+
+        $params = [
+            'index' => 'posts',
+            'body' => [
+                'name' => $user->name,
+                'avatar' => $user->avatar,
+                'content' => $request->post_content,
+                'formatted_address' => $request->formatted_address,
+                "pin" => [
+                "location" => [
+                    "lat" => $request->lat,
+                    "lon" => $request->lng
+                ]
+            ]
+            ]
+        ];
+
+
+        $response = $client->index($params);
+
+        return ['msg'=>'done'];
 
     }
 }
