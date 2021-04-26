@@ -37,7 +37,7 @@ class UserController extends Controller
         }
         $user = Auth::user();
         $token =  $user->createToken('MyApp')-> accessToken;
-        return redirect()->to('http://localhost:4200/login?code='.$user->google_id.'&token='.$token);
+        return redirect()->to(env('APP_URL').'/login?code='.$user->google_id.'&token='.$token);
     }
     public function get_posts() {
         $hosts = [
