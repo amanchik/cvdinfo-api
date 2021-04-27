@@ -89,6 +89,8 @@ class UserController extends Controller
                 $post['avatar'] = $pst['_source']['avatar'];
             else
                 $post['avatar'] = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVIr6pSB3YonR9a0c7WU0iMWEX8ggImki9OLNnLPHYn590JxYkWNaNWB1h4vch9AJcBec&usqp=CAU';
+            if(isset($pst['_source']['tags']))
+                $post['tags'] = $pst['_source']['tags'];
             return $post;
         },$results['hits']['hits']);
 
@@ -103,21 +105,30 @@ class UserController extends Controller
         $client = ClientBuilder::create()           // Instantiate a new ClientBuilder
         ->setHosts($hosts)      // Set the hosts
         ->build();
-
-        $params = [
-            'index' => 'posts',
-            'body' => [
-                'name' => $user->name,
-                'avatar' => $user->avatar,
-                'content' => $request->post_content,
-                'formatted_address' => $request->formatted_address,
-                "pin" => [
+        $body = [
+            'name' => $user->name,
+            'avatar' => $user->avatar,
+            'content' => $request->post_content,
+            'formatted_address' => $request->formatted_address,
+            "pin" => [
                 "location" => [
                     "lat" => $request->lat,
                     "lon" => $request->lng
                 ]
             ]
-            ]
+        ];
+        if($request->tags)
+            $body['tags'] = $request->tags;
+        if($request->blood_group)
+            $body['blood_group'] = $request->blood_group;
+        if($request->age)
+            $body['age'] = $request->age;
+        if($request->weight)
+            $body['weight'] = $request->weight;
+
+        $params = [
+            'index' => 'posts',
+            'body' => $body
         ];
 
 
