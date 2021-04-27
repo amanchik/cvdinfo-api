@@ -47,12 +47,20 @@ class UserController extends Controller
         $client = ClientBuilder::create()           // Instantiate a new ClientBuilder
         ->setHosts($hosts)      // Set the hosts
         ->build();
+        $must = ['match_all' => new stdClass];
+        if($request->tags)
+        {
+            $must = [];
+            foreach($request->tags as  $tag){
+                array_push($must,['term'=>['tags'=>$tag]]);
+            }
+        }
         $params = [
             'index' => 'posts',
             'body' => [
                 'query' => [
                     'bool' => [
-                        'must' => ['match_all' => new stdClass],
+                        'must' => $must,
                         'filter' => [
                             'geo_distance' => ["distance" => $request->distance."km", "pin.location" => [
                                 "lat" => floatval($request->lat),
