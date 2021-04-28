@@ -80,7 +80,7 @@ class UserController extends Controller
 
         }
         if($request->sort){
-            $sort = [['date'=>'asc']];
+            $sort = [['date'=>['order'=>'desc']]];
         }else{
             $sort = [
                 [
