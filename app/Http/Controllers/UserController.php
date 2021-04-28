@@ -146,6 +146,57 @@ class UserController extends Controller
         return $ans;
 
     }
+    public function my_posts(Request $request)
+    {
+        $user = Auth::user();
+        $hosts = [
+            env('ELASTIC_HOST'),         // IP + Port
+        ];
+        $client = ClientBuilder::create()           // Instantiate a new ClientBuilder
+        ->setHosts($hosts)      // Set the hosts
+        ->build();
+        $must = [['term'=>['user_id'=>$user->id]]];
+        $sort = ['date'=>'desc'];
+        $body = [
+            'must' => $must
+        ];
+        $params = [
+            'index' => 'posts',
+            'body' => [
+                'query' => [
+                    'bool' => $body
+                ],
+                'sort' => $sort
+            ]
+        ];
+
+        $results = $client->search($params);
+        $ans = array_map(function ($pst){
+            $post = ['name'=>$pst['_source']['name'],'content'=>$pst['_source']['content']];
+            if(isset($pst['_source']['formatted_address']))
+                $post['formatted_address'] = $pst['_source']['formatted_address'];
+            else
+                $post['formatted_address'] = 'No Adress';
+            if(isset($pst['_source']['avatar']))
+                $post['avatar'] = $pst['_source']['avatar'];
+            else
+                $post['avatar'] = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVIr6pSB3YonR9a0c7WU0iMWEX8ggImki9OLNnLPHYn590JxYkWNaNWB1h4vch9AJcBec&usqp=CAU';
+            if(isset($pst['_source']['tags']))
+                $post['tags'] = $pst['_source']['tags'];
+            if(isset($pst['_source']['age']))
+                $post['age'] = $pst['_source']['age'];
+            if(isset($pst['_source']['weight']))
+                $post['weight'] = $pst['_source']['weight'];
+            if(isset($pst['_source']['gender']))
+                $post['gender'] = $pst['_source']['gender'];
+            if(isset($pst['_source']['public_profile']))
+                $post['public_profile'] = $pst['_source']['public_profile'];
+            return $post;
+        },$results['hits']['hits']);
+
+        return $ans;
+    }
+
     public function create_post(Request $request) {
         $user = Auth::user();
         $hosts = [
@@ -159,6 +210,7 @@ class UserController extends Controller
             'avatar' => $user->avatar,
             'content' => $request->post_content,
             'formatted_address' => $request->formatted_address,
+            'user_id' => $user->id,
             'date' => time(),
             "pin" => [
                 "location" => [
