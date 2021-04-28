@@ -55,6 +55,13 @@ class UserController extends Controller
                 array_push($must,['term'=>['tags'=>$tag]]);
             }
         }
+        if($request->blood_group)
+        {
+            if(!is_array($must))
+                $must =[];
+            array_push($must,['term'=>['blood_group'=>$request->blood_group]]);
+
+        }
         if($request->age_start||$request->age_end){
             if(!is_array($must))
                 $must =[];
