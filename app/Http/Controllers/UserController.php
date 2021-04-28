@@ -159,6 +159,7 @@ class UserController extends Controller
             'avatar' => $user->avatar,
             'content' => $request->post_content,
             'formatted_address' => $request->formatted_address,
+            'date' => time(),
             "pin" => [
                 "location" => [
                     "lat" => $request->lat,
