@@ -55,33 +55,66 @@ class UserController extends Controller
                 array_push($must,['term'=>['tags'=>$tag]]);
             }
         }
+        if($request->age_start||$request->age_end){
+            if(!is_array($must))
+                $must =[];
+            $start_age = 0;
+            $end_age = 200;
+            if($request->age_start)
+                $start_age= $request->age_start;
+            if($request->age_end)
+                $end_age = $request->age_end;
+            array_push($must,['range'=>['age'=>['gte'=>$start_age,'lte'=>$end_age,'boost'=>2.0]]]);
+
+        }
+        if($request->weight_start||$request->weight_end){
+            if(!is_array($must))
+                $must =[];
+            $start_weight = 0;
+            $end_weight = 500;
+            if($request->weight_start)
+                $start_weight= $request->weight_start;
+            if($request->weight_end)
+                $end_weight = $request->weight_end;
+            array_push($must,['range'=>['weight'=>['gte'=>$start_weight,'lte'=>$end_weight,'boost'=>2.0]]]);
+
+        }
+        if($request->sort){
+            $sort = [['date'=>'desc']];
+        }else{
+            $sort = [
+                [
+                    '_geo_distance' => [
+                        'pin.location' => [floatval($request->lat), floatval($request->lng)],
+                        "order" => "asc",
+                        "unit" => "km",
+                        "mode" => "min",
+                        "distance_type" => "arc",
+                        "ignore_unmapped" => true
+                    ]
+                ]
+            ];
+        }
+
+        $body = [
+            'must' => $must
+        ];
+        if($request->lat&&$request->lng){
+            $filter = [
+                'geo_distance' => ["distance" => $request->distance."km", "pin.location" => [
+                    "lat" => floatval($request->lat),
+                    "lon" => floatval($request->lng)
+                ]]
+            ];
+            $body['filter'] = $filter;
+        }
         $params = [
             'index' => 'posts',
             'body' => [
                 'query' => [
-                    'bool' => [
-                        'must' => $must,
-                        'filter' => [
-                            'geo_distance' => ["distance" => $request->distance."km", "pin.location" => [
-                                "lat" => floatval($request->lat),
-                                "lon" => floatval($request->lng)
-                            ]]
-                        ]
-                    ],
-
+                    'bool' => $body
                 ],
-                'sort' => [
-                    [
-                        '_geo_distance' => [
-                            'pin.location' => [floatval($request->lat), floatval($request->lng)],
-                            "order" => "asc",
-                              "unit" => "km",
-                              "mode" => "min",
-                              "distance_type" => "arc",
-                              "ignore_unmapped" => true
-                        ]
-                    ]
-                ]
+                'sort' => $sort
             ]
         ];
 
@@ -99,6 +132,14 @@ class UserController extends Controller
                 $post['avatar'] = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVIr6pSB3YonR9a0c7WU0iMWEX8ggImki9OLNnLPHYn590JxYkWNaNWB1h4vch9AJcBec&usqp=CAU';
             if(isset($pst['_source']['tags']))
                 $post['tags'] = $pst['_source']['tags'];
+            if(isset($pst['_source']['age']))
+                $post['age'] = $pst['_source']['age'];
+            if(isset($pst['_source']['weight']))
+                $post['weight'] = $pst['_source']['weight'];
+            if(isset($pst['_source']['gender']))
+                $post['gender'] = $pst['_source']['gender'];
+            if(isset($pst['_source']['public_profile']))
+                $post['public_profile'] = $pst['_source']['public_profile'];
             return $post;
         },$results['hits']['hits']);
 
@@ -130,9 +171,13 @@ class UserController extends Controller
         if($request->blood_group)
             $body['blood_group'] = $request->blood_group;
         if($request->age)
-            $body['age'] = $request->age;
+            $body['age'] = intval($request->age);
         if($request->weight)
-            $body['weight'] = $request->weight;
+            $body['weight'] = intval($request->weight);
+        if($request->gender)
+            $body['gender'] = $request->gender;
+        if($request->public_profile)
+            $body['public_profile'] = $request->public_profile;
 
         $params = [
             'index' => 'posts',
