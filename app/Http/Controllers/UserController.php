@@ -191,12 +191,30 @@ class UserController extends Controller
                 $post['gender'] = $pst['_source']['gender'];
             if(isset($pst['_source']['public_profile']))
                 $post['public_profile'] = $pst['_source']['public_profile'];
+            $post['id'] = $pst['_id'];
             return $post;
         },$results['hits']['hits']);
 
         return $ans;
     }
+    public function delete_post(Request $request,$id) {
+        $user = Auth::user();
+        $hosts = [
+            env('ELASTIC_HOST'),         // IP + Port
+        ];
+        $client = ClientBuilder::create()           // Instantiate a new ClientBuilder
+        ->setHosts($hosts)      // Set the hosts
+        ->build();
+        $params = [
+            'index' => 'posts',
+            'id'    => $id
+        ];
 
+// Delete doc at /my_index/_doc_/my_id
+        $response = $client->delete($params);
+
+        return ['msg'=>'done'];
+    }
     public function create_post(Request $request) {
         $user = Auth::user();
         $hosts = [

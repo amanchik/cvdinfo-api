@@ -22,3 +22,4 @@ Route::post('/posts', [UserController::class, 'get_posts']);
 //Route::middleware('auth:api')->get('/posts', [UserController::class, 'get_posts']);
 Route::middleware('auth:api')->post('/create/post', [UserController::class, 'create_post']);
 Route::middleware('auth:api')->get('/my/posts', [UserController::class, 'my_posts']);
+Route::middleware('auth:api')->delete('/delete/{id}', [UserController::class, 'delete_post']);
