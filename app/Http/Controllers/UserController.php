@@ -260,8 +260,8 @@ class UserController extends Controller
             $body['gender'] = $request->gender;
         if($request->public_profile)
             $body['public_profile'] = $request->public_profile;
-        if($request->cotact)
-            $body['cotact'] = $request->cotact;
+        if($request->contact)
+            $body['cotact'] = $request->contact;
 
         $params = [
             'index' => 'posts',
