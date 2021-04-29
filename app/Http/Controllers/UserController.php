@@ -143,6 +143,8 @@ class UserController extends Controller
                 $post['age'] = $pst['_source']['age'];
             if(isset($pst['_source']['weight']))
                 $post['weight'] = $pst['_source']['weight'];
+            if(isset($pst['_source']['blood_group']))
+                $post['blood_group'] = $pst['_source']['blood_group'];
             if(isset($pst['_source']['gender']))
                 $post['gender'] = $pst['_source']['gender'];
             if(isset($pst['_source']['public_profile']))
@@ -258,6 +260,8 @@ class UserController extends Controller
             $body['weight'] = intval($request->weight);
         if($request->gender)
             $body['gender'] = $request->gender;
+        if(isset($pst['_source']['blood_group']))
+            $post['blood_group'] = $pst['_source']['blood_group'];
         if($request->public_profile)
             $body['public_profile'] = $request->public_profile;
         if($request->contact)
