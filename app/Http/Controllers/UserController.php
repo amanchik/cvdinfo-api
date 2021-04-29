@@ -261,7 +261,7 @@ class UserController extends Controller
         if($request->public_profile)
             $body['public_profile'] = $request->public_profile;
         if($request->contact)
-            $body['cotact'] = $request->contact;
+            $body['contact'] = $request->contact;
 
         $params = [
             'index' => 'posts',
