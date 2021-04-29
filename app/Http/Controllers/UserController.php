@@ -59,7 +59,7 @@ class UserController extends Controller
         {
             if(!is_array($must))
                 $must =[];
-            array_push($must,['term'=>['blood_group'=>$request->blood_group]]);
+            array_push($must,['term'=>['blood_group.keyword'=>$request->blood_group]]);
 
         }
         if($request->age_start||$request->age_end){
