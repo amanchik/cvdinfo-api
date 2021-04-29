@@ -147,6 +147,8 @@ class UserController extends Controller
                 $post['gender'] = $pst['_source']['gender'];
             if(isset($pst['_source']['public_profile']))
                 $post['public_profile'] = $pst['_source']['public_profile'];
+            if(isset($pst['_source']['contact']))
+                $post['contact'] = $pst['_source']['contact'];
             return $post;
         },$results['hits']['hits']);
 
@@ -198,6 +200,8 @@ class UserController extends Controller
                 $post['gender'] = $pst['_source']['gender'];
             if(isset($pst['_source']['public_profile']))
                 $post['public_profile'] = $pst['_source']['public_profile'];
+            if(isset($pst['_source']['contact']))
+                $post['contact'] = $pst['_source']['contact'];
             $post['id'] = $pst['_id'];
             return $post;
         },$results['hits']['hits']);
@@ -256,6 +260,8 @@ class UserController extends Controller
             $body['gender'] = $request->gender;
         if($request->public_profile)
             $body['public_profile'] = $request->public_profile;
+        if($request->cotact)
+            $body['cotact'] = $request->cotact;
 
         $params = [
             'index' => 'posts',
