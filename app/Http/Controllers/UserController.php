@@ -6,7 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactForm;
 use App\Models\User;
+use App\Models\WebContact;
 use Elasticsearch\ClientBuilder;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -307,8 +309,31 @@ class UserController extends Controller
         Mail::to($user)->send(new ContactForm());
         return ['msg'=>'done'];
     }
-    public function send_message(){
+    public function send_message(Request $request){
+        $client = new Client;
+        $response = $client->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'form_params' =>
+                    [
+                        'secret' => config('services.recaptcha.secret'),
+                        'response' => $request->captcha
+                    ]
+            ]
+        );
+        $body = json_decode((string)$response->getBody());
+        if($body->success){
+            $web_contact = new WebContact();
+            $web_contact->name = $request->name;
+            $web_contact->email = $request->email;
+            $web_contact->message = $request->message;
+            $web_contact->save();
+            $user = new User();
+            $user->email = 'cvdinfo.org@gmail.com';
+            Mail::to($user)->send(new ContactForm($web_contact));
+            return ['msg'=>'done'];
 
-        return ['msg'=>'done'];
+        }
+        return ['msg'=>'failed'];
     }
 }

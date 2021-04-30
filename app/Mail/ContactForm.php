@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\WebContact;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,15 +11,17 @@ use Illuminate\Queue\SerializesModels;
 class ContactForm extends Mailable
 {
     use Queueable, SerializesModels;
+    public $web_contact;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(WebContact $web_contact)
     {
         //
+        $this->web_contact = $web_contact;
     }
 
     /**
@@ -28,6 +31,6 @@ class ContactForm extends Mailable
      */
     public function build()
     {
-        return $this->subject("This is a new subject")->view('mail.contacted');
+        return $this->replyTo($this->web_contact->email)->subject($this->web_contact->name)->view('mail.contacted');
     }
 }

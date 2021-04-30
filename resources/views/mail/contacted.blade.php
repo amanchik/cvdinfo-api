@@ -1,3 +1,3 @@
 <div>
-    This is a new email
+    {{$web_contact->message}}
 </div>
