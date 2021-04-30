@@ -307,4 +307,8 @@ class UserController extends Controller
         Mail::to($user)->send(new ContactForm());
         return ['msg'=>'done'];
     }
+    public function send_message(){
+
+        return ['msg'=>'done'];
+    }
 }
