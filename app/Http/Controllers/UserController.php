@@ -334,6 +334,6 @@ class UserController extends Controller
             return ['msg'=>'done'];
 
         }
-        return ['msg'=>'failed'];
+        return ['msg'=>'failed','body'=>$body];
     }
 }
