@@ -65,6 +65,12 @@ class CreateElasticMappings extends Command
                         'enabled' => true
                     ],
                     'properties' => [
+                        'positive_date' => [
+                            'type' => 'date'
+                        ],
+                        'negative_date' => [
+                            'type' => 'date'
+                        ],
                         'date' => [
                             'type' => 'date'
                         ],

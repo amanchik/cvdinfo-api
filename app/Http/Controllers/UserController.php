@@ -4,10 +4,12 @@
 namespace App\Http\Controllers;
 
 
+use App\Mail\ContactForm;
 use App\Models\User;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use stdClass;
 
@@ -73,6 +75,16 @@ class UserController extends Controller
                 $end_age = $request->age_end;
             array_push($must,['range'=>['age'=>['gte'=>$start_age,'lte'=>$end_age,'boost'=>2.0]]]);
 
+        }
+        if($request->positive_date) {
+            if (!is_array($must))
+                $must = [];
+            array_push($must,['range'=>['positive_date'=>['lte'=>$request->positive_date,'boost'=>2.0]]]);
+        }
+        if($request->negative_date) {
+            if (!is_array($must))
+                $must = [];
+            array_push($must,['range'=>['negative_date'=>['lte'=>$request->negative_date,'boost'=>2.0]]]);
         }
         if($request->weight_start||$request->weight_end){
             if(!is_array($must))
@@ -151,6 +163,10 @@ class UserController extends Controller
                 $post['public_profile'] = $pst['_source']['public_profile'];
             if(isset($pst['_source']['contact']))
                 $post['contact'] = $pst['_source']['contact'];
+            if(isset($pst['_source']['positive_date']))
+                $post['positive_date'] = $pst['_source']['positive_date'];
+            if(isset($pst['_source']['negative_date']))
+                $post['negative_date'] = $pst['_source']['negative_date'];
             return $post;
         },$results['hits']['hits']);
 
@@ -204,6 +220,10 @@ class UserController extends Controller
                 $post['public_profile'] = $pst['_source']['public_profile'];
             if(isset($pst['_source']['contact']))
                 $post['contact'] = $pst['_source']['contact'];
+            if(isset($pst['_source']['positive_date']))
+                $post['positive_date'] = $pst['_source']['positive_date'];
+            if(isset($pst['_source']['negative_date']))
+                $post['negative_date'] = $pst['_source']['negative_date'];
             $post['id'] = $pst['_id'];
             return $post;
         },$results['hits']['hits']);
@@ -266,6 +286,10 @@ class UserController extends Controller
             $body['public_profile'] = $request->public_profile;
         if($request->contact)
             $body['contact'] = $request->contact;
+        if($request->positive_date)
+            $body['positive_date'] = $request->positive_date;
+        if($request->negative_date)
+            $body['negative_date'] = $request->negative_date;
 
         $params = [
             'index' => 'posts',
@@ -277,5 +301,10 @@ class UserController extends Controller
 
         return ['msg'=>'done'];
 
+    }
+    public function send_email(){
+        $user = User::find(1);
+        Mail::to($user)->send(new ContactForm());
+        return ['msg'=>'done'];
     }
 }

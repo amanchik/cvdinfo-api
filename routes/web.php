@@ -21,3 +21,5 @@ Route::get('/', function () {
 
 Route::get('/redirect', [UserController::class, 'redirectToProvider']);
 Route::get('/callback', [UserController::class, 'handleProviderCallback']);
+Route::get('/send/email', [UserController::class, 'send_email']);
+
