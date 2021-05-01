@@ -252,6 +252,21 @@ class UserController extends Controller
     }
     public function create_post(Request $request) {
         $user = Auth::user();
+        $g_client = new Client;
+        $response = $g_client->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'form_params' =>
+                    [
+                        'secret' => config('services.recaptcha.secret'),
+                        'response' => $request->captcha
+                    ]
+            ]
+        );
+        $body = json_decode((string)$response->getBody());
+        if(!$body->success){
+            return  ['msg'=>'failed','success'=>false];
+        }
         $hosts = [
             env('ELASTIC_HOST'),         // IP + Port
         ];
@@ -301,7 +316,7 @@ class UserController extends Controller
 
         $response = $client->index($params);
 
-        return ['msg'=>'done'];
+        return ['msg'=>'done','success'=>true];
 
     }
     public function send_email(){
