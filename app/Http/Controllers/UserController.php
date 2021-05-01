@@ -344,7 +344,7 @@ class UserController extends Controller
             $web_contact->message = $request->message;
             $web_contact->save();
             $user = new User();
-            $user->email = 'cvdinfo.org@gmail.com';
+            $user->email = env('CONTACT_EMAIL');
             Mail::to($user)->send(new ContactForm($web_contact));
             return ['msg'=>'done'];
 
