@@ -155,6 +155,8 @@ class UserController extends Controller
                 $post['tags'] = $pst['_source']['tags'];
             if(isset($pst['_source']['age']))
                 $post['age'] = $pst['_source']['age'];
+            if(isset($pst['_source']['user_id']))
+                $post['user_id'] = $pst['_source']['user_id'];
             if(isset($pst['_source']['weight']))
                 $post['weight'] = $pst['_source']['weight'];
             if(isset($pst['_source']['blood_group']))
@@ -346,6 +348,34 @@ class UserController extends Controller
             $user = new User();
             $user->email = env('CONTACT_EMAIL');
             Mail::to($user)->send(new ContactForm($web_contact));
+            return ['msg'=>'done'];
+
+        }
+        return ['msg'=>'failed','body'=>$body];
+    }
+    public function send_message_user(Request $request){
+        $user = Auth::user();
+        $client = new Client;
+        $response = $client->post(
+            'https://www.google.com/recaptcha/api/siteverify',
+            [
+                'form_params' =>
+                    [
+                        'secret' => config('services.recaptcha.secret'),
+                        'response' => $request->captcha
+                    ]
+            ]
+        );
+        $body = json_decode((string)$response->getBody());
+        if($body->success){
+            $other = User::find($request->user_id);
+            $web_contact = new WebContact();
+            $web_contact->name = $user->name;
+            $web_contact->email = $user->email;
+            $web_contact->message = $request->message;
+            $web_contact->save();
+
+            Mail::to($other)->send(new ContactForm($web_contact));
             return ['msg'=>'done'];
 
         }
