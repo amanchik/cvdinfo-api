@@ -31,6 +31,6 @@ class ContactForm extends Mailable
      */
     public function build()
     {
-        return $this->from('team@cvdinfo.org')->replyTo($this->web_contact->email)->subject("Request From ".$this->web_contact->name)->view('mail.contacted');
+        return $this->from('team@cvdinfo.org')->replyTo($this->web_contact->email)->subject("RE: ".$this->web_contact->name." replied to your post: ")->view('mail.contacted');
     }
 }
